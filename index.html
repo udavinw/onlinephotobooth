@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Photobooth</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta property="og:title" content="Online Photo Booth | Capture Fun Moments">
+    <meta property="og:description" content="Create fun and memorable photos with our online photo booth. Easy to use and share!">
+    <meta property="og:image" content="https://i.ibb.co/XZmQkRcC/icon.jpg">
+    <meta property="og:url" content="https://livephotobooth.vercel.app/">
+    <head>
+        <link rel="icon" type="image/png" href="assets/icon.jpg">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    
     <style>
         .filter-sepia { filter: sepia(1); }
         .filter-grayscale { filter: grayscale(1); }
@@ -68,24 +77,24 @@
             
             <div class="w-full md:w-2/3 bg-gray-700 rounded-lg flex items-center justify-center p-6">
                 <div class="text-center w-full">
-                    <p class="text-2xl font-semibold mb-4">Sample Photos</p>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-gray-800 rounded p-2">
-                            <div class="bg-gray-600 h-24 rounded"></div>
+                            <img src="assets/1.jpg" alt="Sample Image 1" class="w-full h-24 object-cover rounded">
                         </div>
                         <div class="bg-gray-800 rounded p-2">
-                            <div class="bg-gray-600 h-24 rounded filter-sepia"></div>
+                            <img src="assets/2.jpg" alt="Sample Image 2" class="w-full h-24 object-cover rounded">
                         </div>
                         <div class="bg-gray-800 rounded p-2">
-                            <div class="bg-gray-600 h-24 rounded filter-grayscale"></div>
+                            <img src="assets/3.jpg" alt="Sample Image 3" class="w-full h-24 object-cover rounded">
                         </div>
                         <div class="bg-gray-800 rounded p-2">
-                            <div class="bg-gray-600 h-24 rounded filter-invert"></div>
+                            <img src="assets/4.jpg" alt="Sample Image 4" class="w-full h-24 object-cover rounded">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        
 
         <!-- Background Image Settings -->
         <div class="mt-6 bg-gray-700 p-4 rounded-lg">
@@ -115,7 +124,7 @@
 
         <!-- Hidden Inputs for Caption and Copyright -->
         <input type="hidden" id="photoCaption" value="Online PhotoBooth">
-        <input type="hidden" id="copyrightText" value="&copy; 2025 uwphotobooth.vercel.com">
+        <input type="hidden" id="copyrightText" value="&copy; 2025 livephotobooth.vercel.com">
     </div>
     
     <!-- Capture Screen -->
@@ -526,5 +535,20 @@
             console.log('Photo strip downloaded');
         });
     </script>
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "serviceType": "Online Photo Booth",
+          "provider": {
+            "@type": "Organization",
+            "name": "Live Photo Booth",
+            "logo": "https://i.ibb.co/XZmQkRcC/icon.jpg",
+            "url": "https://livephotobooth.vercel.app/"
+          },
+          "description": "A fun online photo booth that lets you capture and share memorable moments."
+        }
+        </script>
+        
 </body>
 </html>
