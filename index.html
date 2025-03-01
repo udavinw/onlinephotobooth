@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Photobooth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .filter-sepia { filter: sepia(1); }
+        .filter-grayscale { filter: grayscale(1); }
+        .filter-invert { filter: invert(1); }
+        
+        /* Screen transitions */
+        .screen {
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .screen.hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        /* Custom strip style */
+        .photo-strip {
+            background-color: white;
+            padding: 15px;
+            border: 8px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Background settings */
+        body {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* Countdown styling */
+        #countdown {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 4rem;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+    <!-- Intro Screen -->
+    <div id="introScreen" class="screen w-full max-w-4xl mb-6 bg-gray-800 rounded-xl p-8 bg-opacity-90">
+        <h1 class="text-4xl font-bold text-center mb-8 animate-bounce">📸 Online Photobooth 📸</h1>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="w-full md:w-1/3 flex flex-col items-center">
+                <div id="insertCoinBtn" class="border-4 border-yellow-400 p-4 rounded-lg mb-2 cursor-pointer hover:bg-gray-700 transition-all transform hover:scale-105">
+                    <div class="bg-gray-700 p-6 rounded-lg text-center">
+                        <p class="text-xl font-semibold mb-2">Insert Coin</p>
+                        <p class="text-6xl font-bold text-yellow-400">₵</p>
+                        <p class="mt-4 text-sm text-gray-400">Click to start</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-2/3 bg-gray-700 rounded-lg flex items-center justify-center p-6">
+                <div class="text-center w-full">
+                    <p class="text-2xl font-semibold mb-4">Sample Photos</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 rounded p-2">
+                            <div class="bg-gray-600 h-24 rounded"></div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-2">
+                            <div class="bg-gray-600 h-24 rounded filter-sepia"></div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-2">
+                            <div class="bg-gray-600 h-24 rounded filter-grayscale"></div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-2">
+                            <div class="bg-gray-600 h-24 rounded filter-invert"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Background Image Settings -->
+        <div class="mt-6 bg-gray-700 p-4 rounded-lg">
+            <h2 class="text-xl font-semibold mb-3">Customize Background</h2>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="w-full md:w-2/3">
+                    <label for="backgroundUrl" class="block mb-2 text-sm font-medium">Background Image URL:</label>
+                    <input type="text" id="backgroundUrl" placeholder="Enter image URL or leave empty for default" 
+                        class="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="w-full md:w-1/3 flex items-end">
+                    <button id="applyBgBtn" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Apply Background</button>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="text-sm font-medium">Quick Backgrounds:</span>
+                <button class="preset-bg px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs" 
+                    data-url="https://images.unsplash.com/photo-1562619371-b67725b6fde2">Retro</button>
+                <button class="preset-bg px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs" 
+                    data-url="https://images.unsplash.com/photo-1557682250-f6333b6797a2">Geometric</button>
+                <button class="preset-bg px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs" 
+                    data-url="https://images.unsplash.com/photo-1616712134411-6b6ae89bc3ba">Bokeh</button>
+                <button class="preset-bg px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-xs" 
+                    data-url="https://images.unsplash.com/photo-1553356084-58ef4a67b2a7">Party</button>
+            </div>
+        </div>
+
+        <!-- Hidden Inputs for Caption and Copyright -->
+        <input type="hidden" id="photoCaption" value="Online PhotoBooth">
+        <input type="hidden" id="copyrightText" value="&copy; 2025 uwphotobooth.vercel.com">
+    </div>
+    
+    <!-- Capture Screen -->
+    <div id="captureScreen" class="screen w-full max-w-4xl mb-6 bg-gray-800 rounded-xl p-4 hidden bg-opacity-90">
+        <h1 class="text-3xl font-bold text-center mb-4">Capture Photos</h1>
+        
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="w-full md:w-3/4 relative border-4 border-white rounded-lg overflow-hidden shadow-lg">
+                <video id="video" autoplay class="w-full h-full rounded-lg transition-transform duration-300"></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <canvas id="layoutCanvas" class="hidden"></canvas>
+                <div id="countdown" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-bold text-white bg-red-500 rounded-full h-20 w-20 flex items-center justify-center hidden"></div>
+            </div>
+            
+            <div class="w-full md:w-1/4 flex flex-col gap-2">
+                <div id="photoPreview" class="flex flex-col gap-2 border-2 border-gray-700 p-2 rounded-lg bg-gray-800 h-full">
+                    <h2 class="text-lg font-bold mb-2">Photos</h2>
+                    <!-- Photo thumbnails will be added here -->
+                    <p id="photoInstructions" class="text-sm text-gray-400">Capture up to 3 photos for your strip</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Effects Section -->
+        <div class="mt-4 flex flex-wrap gap-2 border-t border-gray-700 pt-4">
+            <span class="font-bold flex items-center mr-2">Effects:</span>
+            <button class="filter-btn px-3 py-1 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm" data-filter="filter-sepia">Sepia</button>
+            <button class="filter-btn px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded-lg text-sm" data-filter="filter-grayscale">B&W</button>
+            <button class="filter-btn px-3 py-1 bg-pink-600 hover:bg-pink-700 rounded-lg text-sm" data-filter="filter-invert">Invert</button>
+            <button id="resetFilter" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded-lg text-sm">Reset</button>
+            <button id="capture" class="px-4 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg ml-auto text-sm font-bold">Capture</button>
+            <button id="finishBtn" class="px-4 py-1 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-bold hidden">Finish</button>
+        </div>
+        
+        <!-- Background Style Option -->
+        <div class="mt-4">
+            <div class="flex items-center">
+                <input type="checkbox" id="useBackgroundOnStrip" class="mr-2" checked>
+                <label for="useBackgroundOnStrip" class="text-sm font-medium">Use selected background on photo strip</label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Download Screen -->
+    <div id="downloadScreen" class="screen w-full max-w-4xl bg-gray-800 rounded-xl p-6 hidden bg-opacity-90">
+        <h1 class="text-3xl font-bold text-center mb-6">Your Photos Are Ready!</h1>
+        
+        <div class="bg-gray-700 rounded-lg p-8 text-center mb-6">
+            <p class="mb-3 text-xl">Here's your photo strip!</p>
+            
+            <div id="finalPhotoDisplay" class="max-w-sm mx-auto p-2 bg-white mb-6 photo-strip">
+                <!-- Final photo strip will be displayed here -->
+                <canvas id="displayCanvas" class="mx-auto"></canvas>
+            </div>
+            
+            <p class="text-sm text-gray-400 mb-6">You can share these on social media or print them as souvenirs.</p>
+            
+            <a id="download" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg transition-all inline-block font-bold">
+                ⬇️ Download Photos
+            </a>
+        </div>
+        
+        <div class="text-center">
+            <button id="newSessionBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-all inline-block font-bold">
+                Start New Session
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Screen elements
+        const introScreen = document.getElementById('introScreen');
+        const captureScreen = document.getElementById('captureScreen');
+        const downloadScreen = document.getElementById('downloadScreen');
+        
+        // Button elements
+        const insertCoinBtn = document.getElementById('insertCoinBtn');
+        const finishBtn = document.getElementById('finishBtn');
+        const newSessionBtn = document.getElementById('newSessionBtn');
+        
+        // Camera elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const layoutCanvas = document.getElementById('layoutCanvas');
+        const displayCanvas = document.getElementById('displayCanvas');
+        const captureBtn = document.getElementById('capture');
+        const downloadLink = document.getElementById('download');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const resetFilterBtn = document.getElementById('resetFilter');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoInstructions = document.getElementById('photoInstructions');
+        const countdownDiv = document.getElementById('countdown');
+        const photoCaptionInput = document.getElementById('photoCaption');
+        const copyrightTextInput = document.getElementById('copyrightText');
+        const useBackgroundOnStrip = document.getElementById('useBackgroundOnStrip');
+        
+        // Background elements
+        const backgroundUrlInput = document.getElementById('backgroundUrl');
+        const applyBgBtn = document.getElementById('applyBgBtn');
+        const presetBgButtons = document.querySelectorAll('.preset-bg');
+        
+        let photos = [];
+        let stream = null;
+        let currentFilter = '';
+        let currentBackgroundUrl = '';
+        
+        // Apply background image
+        function applyBackgroundImage(url) {
+            currentBackgroundUrl = url;
+            if (url) {
+                document.body.style.backgroundImage = `url('${url}')`;
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = '#111827'; // Return to default
+            }
+        }
+        
+        // Background button handler
+        applyBgBtn.addEventListener('click', () => {
+            applyBackgroundImage(backgroundUrlInput.value);
+        });
+        
+        // Preset background buttons
+        presetBgButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const url = button.getAttribute('data-url');
+                backgroundUrlInput.value = url;
+                applyBackgroundImage(url);
+            });
+        });
+        
+        // Start button handler
+        insertCoinBtn.addEventListener('click', () => {
+            introScreen.classList.add('hidden');
+            captureScreen.classList.remove('hidden');
+            
+            // Initialize camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(videoStream => {
+                    stream = videoStream;
+                    video.srcObject = stream;
+                })
+                .catch(err => {
+                    console.error('Error accessing webcam:', err);
+                    alert('Unable to access the camera. Please ensure you have granted the necessary permissions.');
+                });
+        });
+        
+        // Filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                currentFilter = button.getAttribute('data-filter');
+                video.className = currentFilter;
+            });
+        });
+        
+        // Reset filter
+        resetFilterBtn.addEventListener('click', () => {
+            currentFilter = '';
+            video.className = '';
+        });
+        
+        // Capture photo
+        captureBtn.addEventListener('click', () => {
+            captureBtn.disabled = true; // Disable button during countdown
+            startCountdown(3, () => {  // Countdown from 3 seconds
+                if (photos.length < 3) {
+                    const context = canvas.getContext('2d');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.filter = getComputedStyle(video).filter;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const imgData = canvas.toDataURL('image/png');
+                    photos.push({
+                        data: imgData,
+                        filter: currentFilter
+                    });
+                    
+                    const imgElement = document.createElement('div');
+                    imgElement.classList.add('relative', 'w-full', 'h-20', 'bg-gray-700', 'rounded-lg', 'overflow-hidden', 'mb-2');
+                    imgElement.innerHTML = `<img src="${imgData}" class="w-full h-full object-cover" /><button class="absolute top-1 right-1 bg-red-600 text-white px-1 text-xs rounded delete-btn">✖</button>`;
+                    photoPreview.appendChild(imgElement);
+                    
+                    imgElement.querySelector('.delete-btn').addEventListener('click', () => {
+                        photos = photos.filter(photo => photo.data !== imgData);
+                        imgElement.remove();
+                        updatePhotoUI();
+                    });
+                    
+                    updatePhotoUI();
+                }
+                captureBtn.disabled = false; // Re-enable button after capture
+            });
+        });
+        
+        // Update UI based on photos
+        function updatePhotoUI() {
+            photoInstructions.textContent = `${photos.length}/3 photos taken`;
+            
+            if (photos.length >= 3) {
+                finishBtn.classList.remove('hidden');
+                captureBtn.classList.add('hidden');
+            } else {
+                finishBtn.classList.add('hidden');
+                captureBtn.classList.remove('hidden');
+            }
+        }
+        
+        // Finish button handler
+        finishBtn.addEventListener('click', () => {
+            generateFinalStrip();
+            captureScreen.classList.add('hidden');
+            downloadScreen.classList.remove('hidden');
+            
+            // Stop camera stream when no longer needed
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+        
+        // Generate final photo strip
+        function generateFinalStrip() {
+            if (photos.length === 0) return;
+            
+            const ctx = layoutCanvas.getContext('2d');
+            const displayCtx = displayCanvas.getContext('2d');
+            
+            // Dimensions for the photo strip - more vertical to match sketch
+            const imgWidth = 300;
+            const imgHeight = 200;
+            const headerHeight = 40;
+            const footerHeight = 30;
+            const padding = 10;
+            const frameSpacing = 15;
+            
+            // Total height includes header, all photos, spacing, and footer
+            const totalHeight = headerHeight + (imgHeight * photos.length) + (frameSpacing * (photos.length - 1)) + footerHeight + (padding * 2);
+            
+            // Set canvas dimensions
+            layoutCanvas.width = imgWidth + (padding * 2);
+            layoutCanvas.height = totalHeight;
+            
+            displayCanvas.width = imgWidth + (padding * 2);
+            displayCanvas.height = totalHeight;
+            
+            // If using background on strip
+            if (useBackgroundOnStrip.checked && currentBackgroundUrl) {
+                // Load background image first
+                const bgImage = new Image();
+                bgImage.crossOrigin = "Anonymous";
+                bgImage.src = currentBackgroundUrl;
+                
+                bgImage.onload = function() {
+                    // Draw background with pattern or scaled
+                    drawBackgroundOnCanvas(ctx, bgImage, layoutCanvas.width, layoutCanvas.height);
+                    drawBackgroundOnCanvas(displayCtx, bgImage, displayCanvas.width, displayCanvas.height);
+                    
+                    // Continue with the rest of the strip generation
+                    completeStripGeneration();
+                };
+                
+                bgImage.onerror = function() {
+                    console.error("Could not load background image. Falling back to default white.");
+                    // Fill with white background as fallback
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, layoutCanvas.width, layoutCanvas.height);
+                    
+                    displayCtx.fillStyle = 'white';
+                    displayCtx.fillRect(0, 0, displayCanvas.width, displayCanvas.height);
+                    
+                    // Continue with the rest of the strip generation
+                    completeStripGeneration();
+                };
+            } else {
+                // Fill with white background
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, layoutCanvas.width, layoutCanvas.height);
+                
+                displayCtx.fillStyle = 'white';
+                displayCtx.fillRect(0, 0, displayCanvas.width, displayCanvas.height);
+                
+                // Continue with the rest of the strip generation
+                completeStripGeneration();
+            }
+            
+            function drawBackgroundOnCanvas(context, image, width, height) {
+                // Create semi-transparent effect so photos stand out
+                context.globalAlpha = 0.15; // Make background very light
+                
+                // Scale and draw the background to fit
+                context.drawImage(image, 0, 0, width, height);
+                
+                // Reset alpha for other elements
+                context.globalAlpha = 1.0;
+                
+                // Add a subtle white overlay to ensure text is readable
+                context.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                context.fillRect(0, 0, width, height);
+            }
+            
+            function completeStripGeneration() {
+                // Draw border around each photo
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                
+                displayCtx.strokeStyle = 'black';
+                displayCtx.lineWidth = 2;
+                
+                // Add caption at the top
+                const captionY = padding + 25; // Position for header text
+                
+                ctx.fillStyle = 'black';
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(photoCaptionInput.value, layoutCanvas.width / 2, captionY);
+                
+                displayCtx.fillStyle = 'black';
+                displayCtx.font = 'bold 18px Arial';
+                displayCtx.textAlign = 'center';
+                displayCtx.fillText(photoCaptionInput.value, displayCanvas.width / 2, captionY);
+                
+                let loadedImages = 0;
+                
+                // Load and draw each photo (with offset for header)
+                photos.forEach((photo, index) => {
+                    const img = new Image();
+                    img.src = photo.data;
+                    img.onload = () => {
+                        // Calculate position for current photo (after header)
+                        const yPos = headerHeight + padding + (index * (imgHeight + frameSpacing));
+                        
+                        // Draw white background behind each photo to make it stand out
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(padding - 5, yPos - 5, imgWidth + 10, imgHeight + 10);
+                        displayCtx.fillStyle = 'white';
+                        displayCtx.fillRect(padding - 5, yPos - 5, imgWidth + 10, imgHeight + 10);
+                        
+                        // Draw the photo
+                        ctx.drawImage(img, padding, yPos, imgWidth, imgHeight);
+                        displayCtx.drawImage(img, padding, yPos, imgWidth, imgHeight);
+                        
+                        // Draw border around the photo
+                        ctx.strokeRect(padding, yPos, imgWidth, imgHeight);
+                        displayCtx.strokeRect(padding, yPos, imgWidth, imgHeight);
+                        
+                        loadedImages++;
+                        
+                        // When all images are loaded, add the copyright footer
+                        if (loadedImages === photos.length) {
+                            // Add copyright at the bottom
+                            const footerY = totalHeight - padding - 10;
+                            
+                            ctx.fillStyle = 'black';
+                            ctx.font = '14px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(copyrightTextInput.value, layoutCanvas.width / 2, footerY);
+                            
+                            displayCtx.fillStyle = 'black';
+                            displayCtx.font = '14px Arial';
+                            displayCtx.textAlign = 'center';
+                            displayCtx.fillText(copyrightTextInput.value, displayCanvas.width / 2, footerY);
+                            
+                            // Set download link
+                            const finalImage = layoutCanvas.toDataURL('image/png');
+                            downloadLink.href = finalImage;
+                            downloadLink.download = 'photobooth_strip.png';
+                        }
+                    };
+                });
+            }
+        }
+        
+        // Start new session
+        newSessionBtn.addEventListener('click', () => {
+            // Reset everything
+            photos = [];
+            photoPreview.innerHTML = '<h2 class="text-lg font-bold mb-2">Photos</h2><p id="photoInstructions" class="text-sm text-gray-400">Capture up to 3 photos for your strip</p>';
+            photoInstructions = document.getElementById('photoInstructions');
+            currentFilter = '';
+            
+            // Go back to intro screen
+            downloadScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden');
+        });
+
+        // Countdown function
+        function startCountdown(seconds, callback) {
+            let count = seconds;
+            countdownDiv.textContent = count;
+            countdownDiv.classList.remove('hidden');
+
+            const interval = setInterval(() => {
+                count--;
+                countdownDiv.textContent = count;
+
+                if (count <= 0) {
+                    clearInterval(interval);
+                    countdownDiv.classList.add('hidden');
+                    callback(); // Execute the capture after the countdown
+                }
+            }, 1000);
+        }
+        
+        // Initialize download button event
+        downloadLink.addEventListener('click', () => {
+            // Download will happen automatically due to href and download attributes
+            console.log('Photo strip downloaded');
+        });
+    </script>
+</body>
+</html>
